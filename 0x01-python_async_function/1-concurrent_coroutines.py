@@ -12,4 +12,4 @@ async def wait_n(n: int, max_delay: int) -> List[float]:
     for _ in range(n):
         coro_list.append(asyncio.create_task(wait_random(max_delay)))
 
-    return await asyncio.gather(*coro_list)
+    return sorted(await asyncio.gather(*coro_list))
