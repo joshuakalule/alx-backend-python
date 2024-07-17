@@ -3,10 +3,10 @@
 
 import asyncio
 import random
-from typing import AsyncIterator
+from typing import AsyncGenerator
 
 
-async def async_generator() -> AsyncIterator[float]:
+async def async_generator() -> AsyncGenerator[float, None]:
     """Implement async generator."""
     for _ in range(10):
         yield random.uniform(0, 10)
