@@ -11,6 +11,16 @@ from unittest.mock import patch, PropertyMock  # type: ignore
 class TestGithubOrgClient(unittest.TestCase):
     """Test the GithubOrgClientClass."""
 
+    @parameterized.expand([
+        ({"license": {"key": "my_license"}}, "my_license", True),
+        ({"license": {"key": "other_license"}}, "my_license", False)
+    ])
+    def test_has_license(self, repo, license_key, answer):
+        """Test test_has_license() method."""
+        test_client = client.GithubOrgClient("test")
+        test_result = test_client.has_license(repo, license_key)
+        self.assertEqual(test_result, answer)
+
     @patch(
         'client.get_json',
         new_callable=PropertyMock,
