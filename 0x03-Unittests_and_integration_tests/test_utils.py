@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Task 0. Parametize a unit test."""
 
-import unittest
-from parameterized import parameterized
-from utils import access_nested_map
-from typing import Any
+import unittest  # type: ignore
+from parameterized import parameterized  # type: ignore
+from utils import access_nested_map  # type: ignore
+from typing import Any  # type: ignore
 
 
 class TestAccessNestedMap(unittest.TestCase):
@@ -19,3 +19,13 @@ class TestAccessNestedMap(unittest.TestCase):
                                result: Any) -> None:
         """Test that nested_map, with path results into result."""
         self.assertEqual(access_nested_map(nested_map, path), result)
+
+    @parameterized.expand([
+        ({}, ("a", )),
+        ({"a": 1}, ("a", "b"))
+    ])
+    def test_access_nested_map_exception(self, nested_map: dict,
+                                         path: tuple) -> None:
+        """Test that nested_map called with path raises KeyError."""
+        with self.assertRaises(KeyError):
+            access_nested_map(nested_map, path)
