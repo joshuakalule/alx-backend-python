@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Task 0. Parametize a unit test."""
+"""Task 0. Test module to test methods in utils module"""
 
 import unittest
 from unittest import mock
