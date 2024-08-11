@@ -3,9 +3,86 @@
 
 
 import client  # type: ignore
-from parameterized import parameterized  # type: ignore
+from parameterized import parameterized, parameterized_class  # type: ignore
 import unittest  # type: ignore
-from unittest.mock import patch, PropertyMock  # type: ignore
+from unittest.mock import patch, Mock, PropertyMock  # type: ignore
+from fixtures import TEST_PAYLOAD
+from typing import Any
+
+
+@parameterized_class(
+    ('org_payload', 'repos_payload', 'expected_repos', 'apache2_repos'),
+    TEST_PAYLOAD
+)
+class TestIntegrationGithubOrgClient(unittest.TestCase):
+    """
+    Test on GithubOrgClient.public_repos in an integration test
+
+    Tests that calling public_repos() method works well as it depends on;
+    public_repos() < repos_payload() < _public_repos_url < org()
+
+    This is performed by only mocking calls that access external resources
+    such as requests.get in get_json
+    Other calls are not mocked
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        """
+        Initiate a patcher for 'requests.get' such that
+        requests.get(url).json() returns based on url
+        """
+        cls.test_org = 'example'
+        cls.apache_license_key = 'apache-2.0'
+
+        def get_return(expected: str = None) -> Any:
+            """Helper function"""
+            test_repos_url = cls.org_payload['repos_url']
+            test_org_url = f"https://api.github.com/orgs/{cls.test_org}"
+            available = {
+                test_org_url: cls.org_payload,
+                test_repos_url: cls.repos_payload
+            }
+            if expected not in available:
+                answer = None
+            answer = available[expected]
+
+            mock = Mock()
+            mock.json.return_value = answer
+
+            return mock
+
+        cls.get_patcher = patch('utils.requests.get', side_effect=get_return)
+
+        cls.mock_requests_get = cls.get_patcher.start()
+
+    @classmethod
+    def tearDownClass(cls):
+        """Stops the patch on requests.get"""
+        cls.get_patcher.stop()
+
+    def setUp(self):
+        """Create client"""
+        self.test_client = client.GithubOrgClient(self.test_org)
+
+    def tearDown(self):
+        """Delete client"""
+        del self.test_client
+
+    def test_public_repos_no_license(self):
+        """
+        Test the public_repos method
+        when called with no license returns all repos
+        """
+        self.assertEqual(self.test_client.public_repos(), self.expected_repos)
+
+    def test_public_repos_have_licenses(self):
+        """
+        Test that public repos method when called with a license,
+        returns the right repos
+        """
+        test_repos = self.test_client.public_repos(self.apache_license_key)
+        self.assertEqual(test_repos, self.apache2_repos)
 
 
 class TestGithubOrgClient(unittest.TestCase):
