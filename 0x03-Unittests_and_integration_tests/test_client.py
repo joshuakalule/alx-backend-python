@@ -3,11 +3,11 @@
 
 
 import client  # type: ignore
-from parameterized import parameterized, parameterized_class  # type: ignore
 import unittest  # type: ignore
-from unittest.mock import patch, Mock, PropertyMock  # type: ignore
 from fixtures import TEST_PAYLOAD
-from typing import Any
+from parameterized import parameterized, parameterized_class  # type: ignore
+from unittest.mock import patch, Mock, PropertyMock  # type: ignore
+from typing import Any, Optional
 
 
 @parameterized_class(
@@ -33,9 +33,8 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         requests.get(url).json() returns based on url
         """
         cls.test_org = 'example'
-        cls.apache_license_key = 'apache-2.0'
 
-        def get_return(expected: str = None) -> Any:
+        def get_return(expected: Optional[str] = None) -> Any:
             """Helper function"""
             test_repos_url = cls.org_payload['repos_url']
             test_org_url = f"https://api.github.com/orgs/{cls.test_org}"
@@ -76,12 +75,12 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         """
         self.assertEqual(self.test_client.public_repos(), self.expected_repos)
 
-    def test_public_repos_have_licenses(self):
+    def test_public_repos_with_license(self):
         """
-        Test that public repos method when called with a license,
+        Test that public repos method when called with apache license,
         returns the right repos
         """
-        test_repos = self.test_client.public_repos(self.apache_license_key)
+        test_repos = self.test_client.public_repos(license="apache-2.0")
         self.assertEqual(test_repos, self.apache2_repos)
 
 
